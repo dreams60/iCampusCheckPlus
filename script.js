@@ -56,14 +56,17 @@ function getLearnStatus(){
                     });
                 }
             });
+            chrome.storage.sync.set({key: thingsToDo}, function() {
+                console.log('Value is set to ' + thingsToDo.lecture[0]);
+              });
 
         }    
         else document.querySelector("#assignment").innerHTML = "데이터를 불러오는데 실패했습니다. 새로고침 후 재실행 해주세요";
     });
 }
-chrome.storage.sync.set({key: thingsToDo}, function() {
-    console.log('Value is set to ' + thingsToDo.lecture[0]);
-  });
+
+
+
 //새창열기
 function moveToContent(action_url){
     chrome.tabs.create({ url: action_url, active: false});

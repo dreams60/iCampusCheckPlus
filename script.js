@@ -270,7 +270,7 @@ function add_HTMLTAG(data, type){
         var id = type+i;
         var row_class = ""
         if(parseInt(i%2)===0)  row_class = ' class="even"'
-        HTML_data = HTML_data + `<tr${row_class}><td>${replaceUnderbar(data[i].course)}</td><td class="title" id="${id}">${replaceUnderbar(data[i].title)}</td><td>${dateToLocaleString(data[i].due_at)}</td><td class="colum4" style="color:${timeLeftTextStyle(data[i].remainingTime_ms)}">${msToTime(data[i].remainingTime_ms)}</td></tr>`;
+        HTML_data = HTML_data + `<tr${row_class}><td>${replaceUnderbar(data[i].course)}</td><td class="title" id="${id}">${replaceUnderbar(data[i].title)}</td><td>${(type === "zoom" ? dateToLocaleString(data[i].schedule_time) : dateToLocaleString(data[i].due_at))}</td><td class="colum4" style="color:${timeLeftTextStyle(data[i].remainingTime_ms)}">${msToTime(data[i].remainingTime_ms)}</td></tr>`;
     }
     HTML_data = HTML_data + '</tbody></table>'
     return HTML_data;
@@ -300,7 +300,7 @@ function sortToDo(thingsToDo){
         return a["remainingTime_ms"]-b["remainingTime_ms"];
     });
     thingsToDo.zoom.sort(function(a, b){
-        return a["start_time"]-b["start_time"];
+        return a["remainingTime_ms"]-b["remainingTime_ms"];
     });
     return thingsToDo;
 }
@@ -445,8 +445,7 @@ function getComponents()
     $.ajax(get_studentID).done(function (response) {
         studentID = response.item.user_login;
     });
-    console.log("찾은 과목 정보:");
-    console.log(course_Array);
+    console.log("과목들을 찾았습니다.");
 
     var assignmentsList = {};
     var inappropriateAssignments = [];
@@ -469,16 +468,22 @@ function getComponents()
             if(response.length>0){
                 for (let j = 0; j < response.length; j++)
                 {
+
                     let raw = response[j];
-                    const timeLeftToUnlock = gapTime(now, raw.unlock_at); //과제가 오픈된건지 확인
+                    let timeLeftToUnlock = gapTime(now, raw.unlock_at); //과제가 오픈된건지 확인
                     let remainingTime = Number.MAX_SAFE_INTEGER;
-                    if (raw.due_at !== undefined)
+                    if (raw.due_at !== null)
                     {
                         remainingTime = gapTime(now, raw.due_at);
                     }
 
+                    if (raw.type === "video_conference") //실강의 경우 unlock_at이 실강 시작시간으로 되어있음
+                    {
+                       timeLeftToUnlock = -1;
+                    }
                     if (timeLeftToUnlock < 0 && remainingTime > 0) //열린 과제만 집어넣음
                     {
+
 
                         let assignment = {
                             "course_name": course_Array[i].name,
@@ -519,10 +524,12 @@ function getComponents()
                             }
                             assignment.duration = Number(raw.integration_data.duration_hour) * 3600 + Number(raw.integration_data.duration_minute) * 60;
 
+                            console.log(raw);
                         }
                         else if (raw.type === "discussion")
                         {
-                            if (raw.submitted === true) //제출한 과제는 패스
+
+                            if (raw.submitted === true || raw.completed === true) //제출한 과제는 패스
                             {
                                 inappropriateAssignments.push(raw.assignment_id);
                                 continue;
@@ -535,7 +542,7 @@ function getComponents()
                         }
                         else
                         {
-                            if (raw.submitted === true) //제출한 과제는 패스
+                            if (raw.submitted === true || raw.completed === true) //제출한 과제는 패스
                             {
                                 inappropriateAssignments.push(raw.assignment_id);
                                 continue;
@@ -644,6 +651,7 @@ function getComponents()
         });
     }
 
+    console.log("최종 과제 목록 추출 완료.");
     //과목별 출석자료 중 필요한 자료만 뽑아내기
     let toDoList = {"lecture":[], "assignment":[], "zoom":[]};
 
@@ -672,8 +680,9 @@ function getComponents()
                             "course": current.course_name,
                             "title": current.title,
                             "url": current.url,
-                            "start_time": current.schedule_time,
-                            "duration": current.duration
+                            "schedule_time": current.schedule_time,
+                            "duration": current.duration,
+                            "remainingTime_ms": gapTime(now, current.schedule_time)
                         });
                     }
                 } else if (current.type === "text") {
@@ -743,7 +752,6 @@ function getComponents()
 
     }
 
-    console.log("최종 리스트:");
-    console.log(toDoList);
+    console.log("데이터 추출 및 가공 완료.");
     return toDoList;
 }

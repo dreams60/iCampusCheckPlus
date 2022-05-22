@@ -99,7 +99,7 @@ function checkToken()
     var cookie;
     cookie = document.cookie.match('(^|;) ?' + "xn_api_token" + '=([^;]*)(;|$)');
     cookie = cookie? cookie[2] : null
-    if(cookie !== null)
+    if(cookie === null)
     {
         var get_courses={
             "url":"https://canvas.skku.edu/api/v1/courses",

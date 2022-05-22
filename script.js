@@ -140,23 +140,29 @@ function checkTokenAndRun(){
         }, function (result) {
 
             console.log("api 토큰 검사 중...");
-            if(result[0].result[0] === true){
-                console.log("api 토큰을 가져옵니다...");
-                var index = 0;
-                while(result[0].result==null) index = index + 1;
-                var action_url = "https://canvas.skku.edu/courses/"+result[0][index].id+"/external_tools/5";
-                chrome.tabs.create({ url: action_url, active: false});
-                var timerID = setInterval(function(){
-                    chrome.scripting.executeScript({
-                        target: {tabId:tabs[0].id, frameIds:[0]},
-                        func: getCookie,
-                        args:["xn_api_token"],
-                    }, function (result) {
-                        if(result[0].result !== null){ //가져온 쿠키 값
-                            getLearnStatus(result[0].result);
-                            clearInterval(timerID);
-                        }});
-                }, 500);//500ms 마다 재시도
+
+            if(result[0].result[0] === false){
+                if (result[0].result[1] === -1)
+                {
+                    document.querySelector("#loadingMessage").innerHTML = "jQuery가 로드되지 않았습니다. 새로고침 후 재실행 해주세요";
+                } else {
+                    console.log("쿠키가 없으므로 직접 api 토큰을 가져옵니다...");
+                    var index = 0;
+                    while(result[0].result==null) index = index + 1;
+                    var action_url = "https://canvas.skku.edu/courses/"+result[0].result[1][index].id+"/external_tools/5";
+                    chrome.tabs.create({ url: action_url, active: false});
+                    var timerID = setInterval(function(){
+                        chrome.scripting.executeScript({
+                            target: {tabId:tabs[0].id, frameIds:[0]},
+                            func: getCookie,
+                            args:["xn_api_token"],
+                        }, function (result) {
+                            if(result[0].result !== null){ //가져온 쿠키 값
+                                getLearnStatus(result[0].result);
+                                clearInterval(timerID);
+                            }});
+                    }, 500);//500ms 마다 재시도
+                }
             }
             else //쿠키 가져오기에 성공
             {

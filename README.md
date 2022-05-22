@@ -7,7 +7,7 @@
 원본 프로젝트 : [ductility/iCampusCheck](https://github.com/ductility/iCampusCheck)
 
 ## 사용법
-<img src="https://raw.githubusercontent.com/ductility/images/master/iCampusCheck(0.1.0).gif">
+<img src="https://raw.githubusercontent.com/dreams60/iCampusCheckPlus/master/extensionExample.gif">
 
 [아캠체크](https://chrome.google.com/webstore/detail/icampus-check/hackfjdbiccajlckgjnkejepipjjbepm?hl=ko) 를 크롬 웹 스토어에서 설치하고 canvas.skku.edu에 로그인 한 뒤 확장프로그램 아이콘을 누르면 실행됩니다.   
 잠시 로딩을 기다리면 마감기한이 남은 강의와 과제를 남은시간이 적은 순으로 보여줍니다.

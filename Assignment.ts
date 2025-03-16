@@ -1,0 +1,4 @@
+class Assignment {
+    name: string;
+
+}

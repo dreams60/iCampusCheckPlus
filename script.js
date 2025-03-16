@@ -102,7 +102,7 @@ function checkToken()
     if(cookie === null)
     {
         var get_courses={
-            "url":"https://canvas.skku.edu/api/v1/courses",
+            "url":"https://canvas.skku.edu/api/v1/users/self/favorites/courses",
             "method":"GET",
             "timeout":0,
             "async":false,
@@ -457,14 +457,14 @@ function getComponents()
     var inappropriateAssignments = [];
     //과목별 강의/과제 목록 가져오기(강의콘텐츠에서 가져옴)
     for(let i=0; i<course_Array.length; i++) {
-        const lectureContentsURL = "https://canvas.skku.edu/learningx/api/v1/courses/"+course_Array[i].id+"/allcomponents_db?user_id="+userID+"&user_login="+studentID+"&role=1";
-        //const targetURL = "https://canvas.skku.edu/api/v1/courses/"+course_Array[i].id+"/assignments?per_page=100"
+        //const lectureContentsURL = "https://canvas.skku.edu/learningx/api/v1/courses/"+course_Array[i].id+"/allcomponents_db?user_id="+userID+"&user_login="+studentID+"&role=1";
+        const lectureContentsURL = "https://canvas.skku.edu/api/v1/courses/"+course_Array[i].id+"/modules";
         const getFromLectureContents = {
             "url": lectureContentsURL,
             "method": "GET",
             "timeout": 0,
             "headers": {
-                "Authorization":authorizationToken,
+                //"Authorization":authorizationToken, => Doesn't accept Authorization
                 "Accept": "*/*"
             },
             "dataType": "json",
@@ -472,6 +472,7 @@ function getComponents()
         };
         $.ajax(getFromLectureContents).done(function (response) {
             if(response.length>0){
+                console.log(response);
                 for (let j = 0; j < response.length; j++)
                 {
 
@@ -490,7 +491,7 @@ function getComponents()
                     if (timeLeftToUnlock < 0 && remainingTime > 0) //열린 과제만 집어넣음
                     {
 
-
+                        console.log(course_Array[i].id);
                         let assignment = {
                             "course_name": course_Array[i].name,
                             "title": raw.title,
@@ -506,6 +507,7 @@ function getComponents()
                             "id": raw.assignment_id,
                             "url": raw.view_info.view_url
                         };
+                        console.log(raw);
                         if (raw.type === "commons") //영상 혹은 과제 혹은
                         {
                             if (raw.commons_content.content_type === "movie" || raw.commons_content.content_type === "mp4" || raw.commons_content.content_type === "zoom")
